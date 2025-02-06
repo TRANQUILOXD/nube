@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Usuario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        button {
+            padding: 10px;
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Crear Usuario</h2>
+        <input type="text" id="newUsername" placeholder="Nuevo nombre de usuario" required>
+        <input type="text" id="secretNumberForNewUser" placeholder="Número secreto de otro usuario" required>
+        <input type="password" id="newUserPassword" placeholder="Contraseña" required>
+        <button onclick="createUser()">Crear Usuario</button>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const supabaseUrl = 'https://rqfqiaovgjaufuojfmsk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxZnFpYW92Z2phdWZ1b2pmbXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg3ODA5OTEsImV4cCI6MjA1NDM1Njk5MX0.05WXFwJg4JK77nEVxVUTohV-K0OCtPlcZ5yl7EiUxhk';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        async function createUser() {
+            const newUsername = document.getElementById("newUsername").value;
+            const secretNumberForNewUser = document.getElementById("secretNumberForNewUser").value;
+            const newUserPassword = document.getElementById("newUserPassword").value;
+
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('secret_number', secretNumberForNewUser)
+                .single();
+
+            if (error || !data) {
+                alert('Número secreto incorrecto o usuario no encontrado');
+                return;
+            }
+
+            const newPasswordHash = await hashPassword(newUserPassword); // Implementa esta función usando bcrypt
+
+            const { error: insertError } = await supabase
+                .from('users')
+                .insert([{ username: newUsername, password_hash: newPasswordHash, secret_number: secretNumberForNewUser }]);
+
+            if (insertError) {
+                alert('Error al crear el usuario');
+            } else {
+                alert('Usuario creado con éxito');
+            }
+        }
+
+        // Implementa estas funciones para manejar el hash de contraseñas
+        async function hashPassword(password) {
+            // Implementa el hashing de la contraseña aquí
+            // Por ejemplo, usando bcrypt
+        }
+    </script>
+</body>
+</html>
